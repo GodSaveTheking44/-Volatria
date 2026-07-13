@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: volatria-quant-platform
+  labels:
+    app: volatria
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: volatria
+  template:
+    metadata:
+      labels:
+        app: volatria
+    spec:
+      containers:
+      - name: platform
+        image: volatria-quant-platform:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: "sqlite:////data/volatria.db"
+        volumeMounts:
+        - name: db-volume
+          mountPath: /data
+      volumes:
+      - name: db-volume
+        persistentVolumeClaim:
+          claimName: volatria-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: volatria-service
+spec:
+  selector:
+    app: volatria
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: LoadBalancer

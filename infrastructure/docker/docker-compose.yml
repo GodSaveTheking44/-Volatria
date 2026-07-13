@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  volatria-quant-platform:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile
+    container_name: volatria_quant_platform
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:////app/volatria.db
+      - LOG_LEVEL=INFO
+      - SECRET_KEY=super_secret_jwt_sign_key_for_institutional_volatria_platform
+    volumes:
+      - volatria_db_data:/app
+
+volumes:
+  volatria_db_data:

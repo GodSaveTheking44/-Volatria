@@ -1,0 +1,21 @@
+[build-system]
+requires = ["scikit-build-core>=0.5", "pybind11>=2.11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "volatria"
+version = "0.1.0"
+description = "High-performance quant trading research platform"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "numpy>=1.24", "pandas", "scipy", "statsmodels", "fastapi", "uvicorn", "sqlalchemy", "scikit-learn", "PyJWT", "cryptography"]
+
+[tool.scikit-build]
+cmake.args = ["-G", "Ninja"]
+wheel.packages = ["backend"]
+build-dir = "build/{wheel_tag}"
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]

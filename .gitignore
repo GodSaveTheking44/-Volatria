@@ -1,0 +1,14 @@
+# CMake build directories
+build/
+
+# Python cache & virtualenvs
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.env
+
+# Local SQLite databases
+volatria.db
+*.zip
+*.txt

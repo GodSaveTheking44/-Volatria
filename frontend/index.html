@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOLATRIA QUANT WORKSTATION</title>
+    <link rel="stylesheet" href="css/terminal.css">
+    <!-- ChartJS for visual metrics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="terminal-container">
+        <!-- Header -->
+        <header class="terminal-header">
+            <div class="header-left">
+                <span class="logo">VOLATRIA QUANT TERMINAL</span>
+                <span class="status-indicator">ONLINE</span>
+            </div>
+            <div class="header-right">
+                <span id="time-display">2026-07-13 15:00:00</span>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="terminal-nav">
+            <button class="nav-tab active" data-tab="market">1. MARKET OVERVIEW</button>
+            <button class="nav-tab" data-tab="pricing">2. OPTION PRICING</button>
+            <button class="nav-tab" data-tab="statarb">3. STAT-ARB BACKTESTS</button>
+            <button class="nav-tab" data-tab="portfolio">4. PORTFOLIO MONITOR</button>
+            <button class="nav-tab" data-tab="risk">5. RISK & STRESS</button>
+            <button class="nav-tab" data-tab="ml">6. MACHINE LEARNING</button>
+            <button class="nav-tab" data-tab="research">7. COINT RESEARCH</button>
+            <button class="nav-tab" data-tab="trading">8. TRADE SIMULATOR</button>
+        </nav>
+
+        <!-- Main Workspace -->
+        <main class="terminal-workspace">
+            <!-- TAB 1: Market Overview -->
+            <section id="tab-market" class="tab-content active">
+                <div class="grid-2x2">
+                    <div class="grid-card">
+                        <h3>Limit Order Book Depth (LOB)</h3>
+                        <table id="lob-table">
+                            <thead>
+                                <tr>
+                                    <th>Bids Qty</th>
+                                    <th>Bid Price</th>
+                                    <th>Ask Price</th>
+                                    <th>Asks Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="grid-card">
+                        <h3>Price Feed Visualization</h3>
+                        <canvas id="market-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: Option Pricing -->
+            <section id="tab-pricing" class="tab-content">
+                <div class="grid-2x2">
+                    <div class="grid-card">
+                        <h3>Analytical Black-Scholes Pricer & Greeks</h3>
+                        <div class="form-group">
+                            <label>Spot (S): <input type="number" id="bs-spot" value="100" step="1"></label>
+                            <label>Strike (K): <input type="number" id="bs-strike" value="100" step="1"></label>
+                            <label>Rate (r): <input type="number" id="bs-rate" value="0.05" step="0.01"></label>
+                            <label>Vol (σ): <input type="number" id="bs-vol" value="0.20" step="0.01"></label>
+                            <label>Maturity (T): <input type="number" id="bs-maturity" value="1.0" step="0.1"></label>
+                            <label>Call Option: <input type="checkbox" id="bs-is-call" checked></label>
+                        </div>
+                        <button onclick="calculateBS()">Calculate Option Price</button>
+                        
+                        <div class="pricing-output" style="margin-top: 15px;">
+                            <div class="output-item">Option Value: <span id="bs-price-val" class="amber">-</span></div>
+                            <div class="output-item">Delta (Δ): <span id="bs-delta-val" class="green">-</span></div>
+                            <div class="output-item">Gamma (Γ): <span id="bs-gamma-val" class="green">-</span></div>
+                            <div class="output-item">Vega (V): <span id="bs-vega-val" class="green">-</span></div>
+                            <div class="output-item">Theta (Θ): <span id="bs-theta-val" class="green">-</span></div>
+                            <div class="output-item">Rho (ρ): <span id="bs-rho-val" class="green">-</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid-card">
+                        <h3>American Option Numerical Pricers</h3>
+                        <div class="form-group">
+                            <label>Binomial Steps: <input type="number" id="num-steps" value="100"></label>
+                            <label>MC Paths: <input type="number" id="num-paths" value="10000"></label>
+                        </div>
+                        <button onclick="calculateNumerical()">Run Numerical Pricers</button>
+                        <div class="pricing-output" style="margin-top: 15px;">
+                            <div class="output-item">CRR Binomial Tree: <span id="binom-price-val" class="amber">-</span></div>
+                            <div class="output-item">LSM Monte Carlo: <span id="lsm-price-val" class="amber">-</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: Stat-Arb Backtests -->
+            <section id="tab-statarb" class="tab-content">
+                <div class="grid-2x2">
+                    <div class="grid-card">
+                        <h3>Run Event-Driven Backtest</h3>
+                        <div class="form-group">
+                            <label>Entry Z-score: <input type="number" id="entry-z" value="2.0" step="0.1"></label>
+                            <label>Exit Z-score: <input type="number" id="exit-z" value="0.5" step="0.1"></label>
+                        </div>
+                        <button onclick="runBacktest()">Run Backtest Loop</button>
+                        
+                        <div class="backtest-metrics" style="margin-top: 15px;">
+                            <div class="output-item">Sharpe Ratio: <span id="bt-sharpe" class="green">-</span></div>
+                            <div class="output-item">Max Drawdown: <span id="bt-maxdd" class="red">-</span></div>
+                            <div class="output-item">CAGR: <span id="bt-cagr" class="green">-</span></div>
+                            <div class="output-item">Win Rate: <span id="bt-winrate" class="green">-</span></div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <a href="/api/v1/backtests/report" target="_blank" class="report-link">Open Full Performance Report HTML</a>
+                        </div>
+                    </div>
+                    <div class="grid-card">
+                        <h3>Equity Curve Visualization</h3>
+                        <canvas id="equity-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: Portfolio Monitor -->
+            <section id="tab-portfolio" class="tab-content">
+                <div class="grid-card" style="width: 100%;">
+                    <h3>Active Institutional Holdings</h3>
+                    <table id="holdings-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th>Average Cost</th>
+                                <th>Current Price</th>
+                                <th>Market Value</th>
+                                <th>Unrealized P&L</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                    <div class="portfolio-balances" style="margin-top: 15px; display: flex; gap: 30px;">
+                        <div>Cash Balance: <span id="port-cash" class="green">$0.00</span></div>
+                        <div>Total Net Asset Value (NAV): <span id="port-nav" class="green">$0.00</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: Risk & Stress -->
+            <section id="tab-risk" class="tab-content">
+                <div class="grid-2x2">
+                    <div class="grid-card">
+                        <h3>Value at Risk (VaR) & Expected Shortfall</h3>
+                        <div class="risk-metrics">
+                            <div class="output-item">Parametric VaR (95%): <span id="risk-param-var" class="amber">-</span></div>
+                            <div class="output-item">Historical VaR (95%): <span id="risk-hist-var" class="amber">-</span></div>
+                            <div class="output-item">Expected Shortfall (95%): <span id="risk-es" class="red">-</span></div>
+                        </div>
+                    </div>
+                    <div class="grid-card">
+                        <h3>Stress Testing Scenarios</h3>
+                        <div class="stress-metrics">
+                            <div class="output-item">Market Crash (-10% spot): <span id="stress-crash" class="red">-</span></div>
+                            <div class="output-item">Volatility Spike (+50% vol): <span id="stress-vol" class="green">-</span></div>
+                            <div class="output-item">Rate Shock (+200 bps): <span id="stress-rate" class="green">-</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: Machine Learning -->
+            <section id="tab-ml" class="tab-content">
+                <div class="grid-2x2">
+                    <div class="grid-card">
+                        <h3>Machine Learning Experiment Logs</h3>
+                        <table id="experiments-table">
+                            <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>Version</th>
+                                    <th>Validation MSE</th>
+                                    <th>Validation R2</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="grid-card">
+                        <h3>Feature store Design</h3>
+                        <p class="description">Features are constructed dynamically by constructing lagged return series ($lag_1$ to $lag_5$) and rolling statistical volatility bands. Model predictions are logged to the db for SRE experiment tracking.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: Cointegration Research -->
+            <section id="tab-research" class="tab-content">
+                <div class="grid-card" style="width: 100%;">
+                    <h3>Engle-Granger Pairs Screening Results</h3>
+                    <div class="research-outputs" style="margin-bottom: 20px;">
+                        <div class="output-item">OLS Beta: <span id="res-beta" class="amber">-</span></div>
+                        <div class="output-item">OLS Intercept: <span id="res-alpha" class="amber">-</span></div>
+                        <div class="output-item">ADF p-value: <span id="res-adf" class="green">-</span></div>
+                    </div>
+                    <h3>Spread Distribution Residuals</h3>
+                    <div class="risk-metrics" id="spread-stats-summary">
+                        <!-- Loaded via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 8: Trade Simulator -->
+            <section id="tab-trading" class="tab-content">
+                <div class="grid-2x2">
+                    <div class="grid-card">
+                        <h3>Submit Order</h3>
+                        <div class="form-group">
+                            <label>Symbol: <input type="text" id="trade-symbol" value="AAPL"></label>
+                            <label>Quantity: <input type="number" id="trade-qty" value="10"></label>
+                            <label>Price: <input type="number" id="trade-price" value="180"></label>
+                            <label>Side: 
+                                <select id="trade-side">
+                                    <option value="BUY">BUY</option>
+                                    <option value="SELL">SELL</option>
+                                </select>
+                            </label>
+                        </div>
+                        <button onclick="submitOrder()">Submit Order</button>
+                    </div>
+                    <div class="grid-card">
+                        <h3>Recent Order Log History</h3>
+                        <table id="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Symbol</th>
+                                    <th>Side</th>
+                                    <th>Price</th>
+                                    <th>Qty</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Command Console Console Footer -->
+        <footer class="terminal-footer">
+            <span class="prompt">></span>
+            <input type="text" id="terminal-input" placeholder="Type command here... (e.g. '/tab market', '/price AAPL', '/run backtest')">
+        </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
